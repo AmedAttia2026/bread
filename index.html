@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سجل المدفوعات</title>
     <meta name="theme-color" content="#4a5568">
-    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
@@ -19,15 +18,16 @@
         }
         .month-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.8rem;
+            margin-top: 2rem;
         }
         .month-cell {
             background-color: #fff;
             border-radius: 0.75rem;
-            padding: 1.5rem 1rem;
+            padding: 1rem 0.8rem;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             cursor: pointer;
             word-wrap: break-word;
@@ -35,10 +35,11 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            min-height: 100px;
         }
         .month-cell:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+            box-shadow: 6px 6px 10px rgba(0, 0, 0, 0.2);
         }
         .paid {
             background-color: #d1fae5;
@@ -56,14 +57,18 @@
             align-items: center;
             z-index: 1000;
         }
+        .modal-overlay.hidden {
+            display: none;
+        }
         .modal {
             background: #fff;
-            padding: 2rem;
-            border-radius: 1rem;
+            padding: 1.5rem;
+            border-radius: 0.8rem;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             width: 90%;
             max-width: 400px;
             text-align: center;
+            position: relative;
         }
         .modal input[type="text"] {
             width: 100%;
@@ -74,15 +79,18 @@
         }
         .modal-buttons {
             display: flex;
-            justify-content: flex-end;
-            margin-top: 1.5rem;
+            justify-content: space-between;
             gap: 0.5rem;
+            margin-top: 1.5rem;
+            padding: 0 0.5rem;
         }
         .modal-buttons button {
-            padding: 0.75rem 1.5rem;
+            padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             font-weight: bold;
             transition: background-color 0.2s ease;
+            flex-grow: 1;
+            font-size: 0.9rem;
         }
         .price-options {
             display: flex;
@@ -109,44 +117,154 @@
             background-color: #34d399;
             color: #fff;
         }
+        .app-bar {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .app-bar .title {
+            font-size: 1rem;
+            font-weight: bold;
+            flex-grow: 1;
+        }
+        .app-bar .nav-buttons {
+            display: flex;
+            gap: 0.4rem;
+        }
+        .app-bar .nav-button {
+            background-color: #636b77;
+            padding: 0.3rem 0.6rem;
+            border-radius: 0.4rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 0.8rem;
+        }
+        .app-bar .nav-button:hover {
+            background-color: #718096;
+        }
+        .view-btn {
+            background-color: #4a5568;
+            color: white;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            font-size: 0.7rem;
+            margin-top: 0.5rem;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            transition: background-color 0.2s;
+        }
+        .view-btn:hover {
+            background-color: #636b77;
+        }
+        .month-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .payment-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            align-items: center;
+            text-align: right;
+            margin-top: 0.5rem;
+            padding: 0.8rem;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+        .detail-value {
+            font-size: 1rem;
+            color: #2d3748;
+        }
+        .divider {
+            grid-column: 1 / -1;
+            height: 1px;
+            background-color: #e2e8f0;
+            margin: 0.5rem 0;
+        }
+        .close-btn {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #888;
+            cursor: pointer;
+            line-height: 1;
+        }
+        /* إخفاء تسميات وحقول البيانات عند الإضافة */
+        .modal[data-mode="add"] .detail-label,
+        .modal[data-mode="add"] .detail-value {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <!-- Main Container -->
-    <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold text-center mb-6 text-gray-700">سجل المدفوعات</h1>
-        
-        <!-- Year Display -->
-        <h2 id="current-year" class="text-2xl font-bold text-center text-gray-700 mb-4"></h2>
+    <header class="app-bar">
+        <button id="prev-year" class="nav-button"></button>
+        <div class="title" id="current-year-title">سجل المدفوعات - 2025</div>
+        <button id="next-year" class="nav-button"></button>
+    </header>
 
-        <!-- Month Grid -->
+    <div class="container mx-auto p-4">
         <div id="month-grid" class="month-grid"></div>
     </div>
 
-    <!-- Modal for Payment Entry -->
     <div id="payment-modal" class="hidden modal-overlay">
-        <div class="modal">
-            <h2 class="text-2xl font-bold text-gray-700 mb-4">تسجيل دفعة</h2>
-            <p id="modal-month" class="text-lg text-gray-600 mb-2"></p>
-            <p id="current-date-time" class="text-sm text-gray-500 mb-4"></p>
-            <input type="text" id="person-name" placeholder="اسم الشخص" class="focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <div class="modal" id="modal-content">
+            <button class="close-btn">&times;</button>
+            <h2 class="text-2xl font-bold text-gray-700 mb-4">تفاصيل الدفعة</h2>
+            <p id="modal-month" class="text-lg text-gray-600 mb-4"></p>
             
-            <div class="price-options">
-                <div class="price-option">
-                    <input type="radio" id="price120" name="price" value="120">
-                    <label for="price120">120</label>
-                </div>
-                <div class="price-option">
-                    <input type="radio" id="price125" name="price" value="125">
-                    <label for="price125">125</label>
+            <div id="payment-details" class="hidden payment-details-grid">
+                <span class="detail-label">الاسم:</span>
+                <span id="modal-person-name" class="detail-value"></span>
+                <div class="divider"></div>
+                <span class="detail-label">السعر:</span>
+                <span id="modal-price" class="detail-value"></span>
+                <div class="divider"></div>
+                <span class="detail-label">تاريخ الحفظ:</span>
+                <span id="modal-date" class="detail-value"></span>
+            </div>
+
+            <div id="payment-form" class="hidden">
+                <input type="text" id="person-name" placeholder="اسم الشخص" class="focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="price-options">
+                    <div class="price-option">
+                        <input type="radio" id="price120" name="price" value="120">
+                        <label for="price120">120</label>
+                    </div>
+                    <div class="price-option">
+                        <input type="radio" id="price125" name="price" value="125">
+                        <label for="price125">125</label>
+                    </div>
                 </div>
             </div>
 
             <div class="modal-buttons">
                 <button id="cancel-btn" class="bg-red-500 text-white hover:bg-red-600">إلغاء</button>
-                <button id="delete-btn" class="bg-gray-400 text-white hover:bg-gray-500 hidden">حذف</button>
-                <button id="save-btn" class="bg-blue-500 text-white hover:bg-blue-600">حفظ</button>
+                <button id="delete-btn" class="bg-yellow-500 text-white hover:bg-yellow-600 hidden">حذف</button>
+                <button id="edit-btn" class="bg-blue-500 text-white hover:bg-blue-600 hidden">تعديل</button>
+                <button id="save-btn" class="bg-blue-500 text-white hover:bg-blue-600 hidden">حفظ</button>
             </div>
         </div>
     </div>
@@ -159,34 +277,45 @@
             ];
 
             const monthGrid = document.getElementById('month-grid');
-            const currentYearEl = document.getElementById('current-year');
+            const currentYearTitleEl = document.getElementById('current-year-title');
+            const prevYearBtn = document.getElementById('prev-year');
+            const nextYearBtn = document.getElementById('next-year');
+
             const modal = document.getElementById('payment-modal');
+            const modalContent = document.getElementById('modal-content');
             const modalMonthEl = document.getElementById('modal-month');
+            const paymentDetails = document.getElementById('payment-details');
+            const paymentForm = document.getElementById('payment-form');
             const personNameInput = document.getElementById('person-name');
+            const modalPersonName = document.getElementById('modal-person-name');
+            const modalPrice = document.getElementById('modal-price');
+            const modalDate = document.getElementById('modal-date');
+            
             const saveBtn = document.getElementById('save-btn');
             const deleteBtn = document.getElementById('delete-btn');
+            const editBtn = document.getElementById('edit-btn');
             const cancelBtn = document.getElementById('cancel-btn');
-            const currentDateTimeEl = document.getElementById('current-date-time');
+            const priceOptions = document.querySelectorAll('input[name="price"]');
+            const closeBtn = document.querySelector('.close-btn');
 
             let currentYear = new Date().getFullYear();
             let currentMonthCell = null;
 
-            // Load data from localStorage
             function loadData() {
                 const data = localStorage.getItem('payments');
                 return data ? JSON.parse(data) : {};
             }
 
-            // Save data to localStorage
             function saveData(data) {
                 localStorage.setItem('payments', JSON.stringify(data));
             }
 
-            // Render the calendar for the current year, showing all months
             function renderCalendar() {
                 monthGrid.innerHTML = '';
                 const payments = loadData();
-                currentYearEl.textContent = currentYear;
+                currentYearTitleEl.textContent = `سجل المدفوعات - ${currentYear}`;
+                prevYearBtn.textContent = `${currentYear - 1}`;
+                nextYearBtn.textContent = `${currentYear + 1}`;
 
                 months.forEach((monthName, monthIndex) => {
                     const monthCell = document.createElement('div');
@@ -201,76 +330,84 @@
                     
                     if (paymentInfo) {
                         monthCell.classList.add('paid');
-                        cellContent += `<p class="text-sm text-green-700 mt-1">دفعة لـ: ${paymentInfo.person}</p>`;
-                        cellContent += `<p class="text-sm text-gray-600">السعر: ${paymentInfo.price}</p>`;
-                        
-                        // Displaying the saved date and time
-                        const savedDate = new Date(paymentInfo.date);
-                        const formattedSavedDate = savedDate.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
-                        const formattedSavedTime = savedDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-                        cellContent += `<p class="text-xs text-gray-500 mt-2">تم الحفظ في: ${formattedSavedDate}</p>`;
-                        cellContent += `<p class="text-xs text-gray-500">الساعة: ${formattedSavedTime}</p>`;
+                        cellContent += `<p class="text-sm text-green-700 mt-1">مدفوع</p>`;
+                    } else {
+                        cellContent += `<p class="text-sm text-gray-500 mt-1">غير مدفوع</p>`;
                     }
                     
                     monthCell.innerHTML = cellContent;
-                    monthCell.addEventListener('click', () => showModal(monthCell));
+
+                    if (paymentInfo) {
+                        monthCell.addEventListener('click', () => showModal('view', monthCell));
+                    } else {
+                        monthCell.addEventListener('click', () => showModal('add', monthCell));
+                    }
+                    
                     monthGrid.appendChild(monthCell);
                 });
             }
 
-            // Show the modal and populate with data
-            function showModal(cell) {
+            function showModal(mode, cell) {
+                if (!cell) {
+                    return; 
+                }
                 currentMonthCell = cell;
                 const monthIndex = parseInt(cell.dataset.month);
                 const year = cell.dataset.year;
                 const monthName = months[monthIndex];
-
                 const dateKey = `${year}-${monthIndex}`;
                 const payments = loadData();
                 const paymentInfo = payments[dateKey];
 
                 modalMonthEl.textContent = `${monthName} ${year}`;
-                personNameInput.value = paymentInfo ? paymentInfo.person : '';
+                modalContent.dataset.mode = mode; // إضافة وضع المودال كخاصية في الـ HTML
 
-                // Display current date and time
-                const now = new Date();
-                const formattedDate = now.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                const formattedTime = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-                currentDateTimeEl.textContent = `التاريخ: ${formattedDate} - الوقت: ${formattedTime}`;
-                
-                // Set the price option
-                const price120 = document.getElementById('price120');
-                const price125 = document.getElementById('price125');
+                // إخفاء جميع العناصر أولاً
+                paymentDetails.classList.add('hidden');
+                paymentForm.classList.add('hidden');
+                saveBtn.classList.add('hidden');
+                editBtn.classList.add('hidden');
+                deleteBtn.classList.add('hidden');
 
-                if (paymentInfo) {
-                    if (paymentInfo.price == 120) {
-                        price120.checked = true;
-                    } else if (paymentInfo.price == 125) {
-                        price125.checked = true;
-                    }
-                    saveBtn.textContent = 'تعديل';
+                if (mode === 'add') {
+                    paymentForm.classList.remove('hidden');
+                    personNameInput.value = '';
+                    priceOptions.forEach(option => option.checked = false);
+                    saveBtn.classList.remove('hidden');
+                    cancelBtn.classList.remove('hidden');
+                } else if (mode === 'view') {
+                    paymentDetails.classList.remove('hidden');
+                    modalPersonName.textContent = paymentInfo.person;
+                    modalPrice.textContent = paymentInfo.price;
+                    const savedDate = new Date(paymentInfo.date);
+                    const formattedSavedDate = savedDate.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    modalDate.textContent = formattedSavedDate;
+                    editBtn.classList.remove('hidden');
                     deleteBtn.classList.remove('hidden');
-                } else {
-                    price120.checked = false;
-                    price125.checked = false;
-                    saveBtn.textContent = 'حفظ';
-                    deleteBtn.classList.add('hidden');
+                    cancelBtn.classList.remove('hidden');
+                } else if (mode === 'edit') {
+                    paymentForm.classList.remove('hidden');
+                    personNameInput.value = paymentInfo ? paymentInfo.person : '';
+                    if (paymentInfo.price == 120) {
+                        document.getElementById('price120').checked = true;
+                    } else if (paymentInfo.price == 125) {
+                        document.getElementById('price125').checked = true;
+                    }
+                    saveBtn.classList.remove('hidden');
+                    deleteBtn.classList.remove('hidden');
+                    cancelBtn.classList.remove('hidden');
                 }
-
                 modal.classList.remove('hidden');
-                personNameInput.focus();
             }
 
-            // Hide the modal
             function hideModal() {
                 modal.classList.add('hidden');
                 currentMonthCell = null;
                 personNameInput.value = '';
-                const priceOptions = document.querySelectorAll('input[name="price"]');
                 priceOptions.forEach(option => option.checked = false);
+                modalContent.dataset.mode = '';
             }
 
-            // Save the payment
             saveBtn.addEventListener('click', () => {
                 const personName = personNameInput.value.trim();
                 let selectedPrice = document.querySelector('input[name="price"]:checked');
@@ -297,33 +434,47 @@
                 hideModal();
             });
 
-            // Delete the payment
             deleteBtn.addEventListener('click', () => {
-                const month = currentMonthCell.dataset.month;
-                const year = currentMonthCell.dataset.year;
-                const dateKey = `${year}-${month}`;
-                
-                const payments = loadData();
-                delete payments[dateKey];
-                
-                saveData(payments);
-                renderCalendar();
-                hideModal();
+                if (confirm("هل أنت متأكد من حذف هذه الدفعة؟")) {
+                    const month = currentMonthCell.dataset.month;
+                    const year = currentMonthCell.dataset.year;
+                    const dateKey = `${year}-${month}`;
+                    
+                    const payments = loadData();
+                    delete payments[dateKey];
+                    
+                    saveData(payments);
+                    renderCalendar();
+                    hideModal();
+                }
             });
 
-            // Cancel the payment entry
+            editBtn.addEventListener('click', () => {
+                showModal('edit', currentMonthCell);
+            });
+
             cancelBtn.addEventListener('click', () => {
                 hideModal();
             });
 
-            // Handle modal close on outside click
+            closeBtn.addEventListener('click', hideModal);
+
             modal.addEventListener('click', (e) => {
                 if (e.target.id === 'payment-modal') {
                     hideModal();
                 }
             });
 
-            // Initial render
+            prevYearBtn.addEventListener('click', () => {
+                currentYear--;
+                renderCalendar();
+            });
+
+            nextYearBtn.addEventListener('click', () => {
+                currentYear++;
+                renderCalendar();
+            });
+
             renderCalendar();
         });
     </script>
