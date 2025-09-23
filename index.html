@@ -18,15 +18,14 @@
         }
         .month-grid {
             display: grid;
-            /* تم زيادة minmax() لزيادة عرض المربعات */
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 1rem;
-            margin-top: 2rem;
+            /* تم تقليل المسافة هنا */
+            margin-top: 1rem;
         }
         .month-cell {
             background-color: #fff;
             border-radius: 0.75rem;
-            /* تم زيادة الهامش الداخلي (padding) لزيادة ارتفاع المربع */
             padding: 1.5rem 1rem;
             text-align: center;
             box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1);
@@ -37,7 +36,6 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            /* تم زيادة الحد الأدنى للارتفاع لضمان الحجم */
             min-height: 120px;
         }
         .month-cell:hover {
