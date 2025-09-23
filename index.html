@@ -18,14 +18,16 @@
         }
         .month-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 0.8rem;
+            /* تم زيادة minmax() لزيادة عرض المربعات */
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
             margin-top: 2rem;
         }
         .month-cell {
             background-color: #fff;
             border-radius: 0.75rem;
-            padding: 1rem 0.8rem;
+            /* تم زيادة الهامش الداخلي (padding) لزيادة ارتفاع المربع */
+            padding: 1.5rem 1rem;
             text-align: center;
             box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -35,7 +37,8 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100px;
+            /* تم زيادة الحد الأدنى للارتفاع لضمان الحجم */
+            min-height: 120px;
         }
         .month-cell:hover {
             transform: translateY(-2px);
